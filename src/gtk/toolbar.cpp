@@ -688,7 +688,9 @@ GSList* wxToolBar::GetRadioGroup(size_t pos)
     if (pos > 0)
     {
         item = gtk_toolbar_get_nth_item(m_toolbar, int(pos) - 1);
-        if (!GTK_IS_RADIO_TOOL_BUTTON(item))
+        if (GTK_IS_SEPARATOR_TOOL_ITEM(item) && gtk_tool_item_get_expand(item))
+            item = gtk_toolbar_get_nth_item(m_toolbar, int(pos) - 2);
+        else if (!GTK_IS_RADIO_TOOL_BUTTON(item))
             item = NULL;
     }
     if (item == NULL && pos < m_tools.size())

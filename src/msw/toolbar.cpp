@@ -1174,36 +1174,38 @@ bool wxToolBar::Realize()
                 {
                     case wxITEM_RADIO:
                         button.fsStyle = TBSTYLE_CHECKGROUP;
-
-                        if ( !lastWasRadio )
-                        {
-                            // the first item in the radio group is checked by
-                            // default to be consistent with wxGTK and the menu
-                            // radio items
-                            button.fsState |= TBSTATE_CHECKED;
-
-                            if (tool->Toggle(true))
-                            {
-                                DoToggleTool(tool, true);
-                            }
-                        }
-                        else if ( tool->IsToggled() )
                         {
                             wxToolBarToolsList::compatibility_iterator nodePrev = node->GetPrevious();
-                            int prevIndex = i - 1;
-                            while ( nodePrev )
+                            bool IsStretchableSpace = nodePrev ? nodePrev->GetData()->IsStretchableSpace() : false;
+                            if (!lastWasRadio && !IsStretchableSpace)
                             {
-                                TBBUTTON& prevButton = buttons[prevIndex];
-                                wxToolBarToolBase *toolPrev = nodePrev->GetData();
-                                if ( !toolPrev->IsButton() || toolPrev->GetKind() != wxITEM_RADIO )
-                                    break;
+                                // the first item in the radio group is checked by
+                                // default to be consistent with wxGTK and the menu
+                                // radio items
+                                button.fsState |= TBSTATE_CHECKED;
 
-                                if ( toolPrev->Toggle(false) )
-                                    DoToggleTool(toolPrev, false);
+                                if (tool->Toggle(true))
+                                {
+                                    DoToggleTool(tool, true);
+                                }
+                            }
+                            else if (tool->IsToggled())
+                            {
+                                int prevIndex = i - 1;
+                                while (nodePrev)
+                                {
+                                    TBBUTTON& prevButton = buttons[prevIndex];
+                                    wxToolBarToolBase* toolPrev = nodePrev->GetData();
+                                    if (!toolPrev->IsButton() || toolPrev->GetKind() != wxITEM_RADIO)
+                                        break;
 
-                                prevButton.fsState &= ~TBSTATE_CHECKED;
-                                nodePrev = nodePrev->GetPrevious();
-                                prevIndex--;
+                                    if (toolPrev->Toggle(false))
+                                        DoToggleTool(toolPrev, false);
+
+                                    prevButton.fsState &= ~TBSTATE_CHECKED;
+                                    nodePrev = nodePrev->GetPrevious();
+                                    prevIndex--;
+                                }
                             }
                         }
 

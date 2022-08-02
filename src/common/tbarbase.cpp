@@ -391,36 +391,36 @@ void wxToolBarBase::UnToggleRadioGroup(wxToolBarToolBase *tool)
     wxToolBarToolsList::compatibility_iterator node = m_tools.Find(tool);
     wxCHECK_RET( node, wxT("invalid tool in wxToolBarTool::UnToggleRadioGroup") );
 
-    wxToolBarToolsList::compatibility_iterator nodeNext = node->GetNext();
-    while ( nodeNext )
+    wxToolBarToolsList::compatibility_iterator nodeNext;
+    for (nodeNext = node->GetNext(); nodeNext; nodeNext = nodeNext->GetNext())
     {
         wxToolBarToolBase *toolNext = nodeNext->GetData();
+        if (toolNext->IsStretchableSpace())
+        {
+            printf("toolNext->IsStretchableSpace()\n");
+            continue;
+        }
 
         if ( !toolNext->IsButton() || toolNext->GetKind() != wxITEM_RADIO )
             break;
 
-        if ( toolNext->Toggle(false) )
-        {
-            DoToggleTool(toolNext, false);
-        }
-
-        nodeNext = nodeNext->GetNext();
+        if (toolNext->Toggle(false))  DoToggleTool(toolNext, false);
     }
 
     wxToolBarToolsList::compatibility_iterator nodePrev = node->GetPrevious();
-    while ( nodePrev )
+    for (nodePrev = node->GetPrevious(); nodePrev; nodePrev = nodePrev->GetPrevious())
     {
-        wxToolBarToolBase *toolNext = nodePrev->GetData();
-
-        if ( !toolNext->IsButton() || toolNext->GetKind() != wxITEM_RADIO )
-            break;
-
-        if ( toolNext->Toggle(false) )
+        wxToolBarToolBase* toolPrev = nodePrev->GetData();
+        if (toolPrev->IsStretchableSpace())
         {
-            DoToggleTool(toolNext, false);
+            printf("toolPrev->IsStretchableSpace()\n");
+            continue;
         }
 
-        nodePrev = nodePrev->GetPrevious();
+        if (!toolPrev->IsButton() || toolPrev->GetKind() != wxITEM_RADIO)
+            break;
+
+        if (toolPrev->Toggle(false))  DoToggleTool(toolPrev, false);
     }
 }
 

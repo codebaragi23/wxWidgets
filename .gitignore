@@ -12,6 +12,7 @@
 /autom4te.cache
 
 # /build/
+build*/
 
 # /build/autoconf_prepend-include/autoconf/
 /build/autoconf_prepend-include/autoconf/autoconf.m4f
