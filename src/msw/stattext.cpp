@@ -71,6 +71,10 @@ WXDWORD wxStaticText::MSWGetStyle(long style, WXDWORD *exstyle) const
     else
         msStyle |= SS_LEFT;
 
+    // vertical
+    if ( style & wxALIGN_CENTRE_VERTICAL )
+        msStyle |= SS_CENTERIMAGE;
+
 #ifdef SS_ENDELLIPSIS
     // for now, add the SS_ENDELLIPSIS style if wxST_ELLIPSIZE_END is given;
     // we may need to remove it later in ::SetLabel() if the given label
