@@ -46,6 +46,7 @@ public:
     GtkWidget* m_box;
     GtkWidget* m_label;
     GtkWidget* m_image;
+    GtkWidget* m_closeBtn;
     int m_imageIndex;
 };
 
@@ -100,6 +101,17 @@ static void event_after(GtkNotebook* widget, GdkEvent*, wxNotebook* win)
     gtk_notebook_set_current_page(widget, win->m_oldSelection);
 
     g_signal_handlers_unblock_by_func(widget, (void*)switch_page, win);
+}
+}
+
+
+//-----------------------------------------------------------------------------
+// "close_page"
+//-----------------------------------------------------------------------------
+extern "C" {
+static void wxgtk_close_page(GtkWidget* widget, wxNotebook* win)
+{
+  win->GTKOnClosePage(widget);
 }
 }
 
@@ -264,9 +276,49 @@ int wxNotebook::DoSetSelection( size_t page, int flags )
 void wxNotebook::GTKOnPageChanged()
 {
     m_selection = gtk_notebook_get_current_page(GTK_NOTEBOOK(m_widget));
-
     SendPageChangedEvent(m_oldSelection);
+    
+    if (m_oldSelection >= 0)
+    {
+      wxGtkNotebookPage* pageData = GetNotebookPage(m_oldSelection);
+      if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS)  gtk_widget_hide(pageData->m_closeBtn);
+    }
+
+    if (m_selection >= 0)
+    {
+      wxGtkNotebookPage* pageData = GetNotebookPage(m_selection);
+      if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS) gtk_widget_show(pageData->m_closeBtn);
+    }
 }
+
+void wxNotebook::GTKOnClosePage(GtkWidget* widget)
+{
+    for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
+    {
+        wxGtkNotebookPage* pageData = GetNotebookPage(nPage);
+        GtkWidget* box = pageData->m_box;
+        if (!gtk_widget_get_child_visible(box))
+            continue;
+        if (pageData->m_closeBtn == widget)
+        {
+            RemovePage(nPage);
+            SendPageCloseEvent(nPage);
+            if (GetPageCount() > 0)
+            {
+                wxGtkNotebookPage* pageData = GetNotebookPage(m_selection);
+                if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS) gtk_widget_show(pageData->m_closeBtn);
+            }
+      }
+    }
+}
+void wxNotebook::SendPageCloseEvent(int nPage)
+  {
+    wxNotebookEvent event(wxEVT_NOTEBOOK_PAGE_CLOSED, GetId());
+    event.SetSelection(nPage);
+    event.SetEventObject(this);
+    GetEventHandler()->ProcessEvent(event);
+  }
+
 
 bool wxNotebook::SetPageText( size_t page, const wxString &text )
 {
@@ -531,6 +583,21 @@ bool wxNotebook::InsertPage( size_t position,
         g_object_unref(style);
     }
 #endif
+
+
+    if ((m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS) || (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS))
+    {
+        pageData->m_closeBtn = gtk_button_new();
+        gtk_button_set_image(GTK_BUTTON(pageData->m_closeBtn), gtk_image_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_MENU));
+        gtk_button_set_relief(GTK_BUTTON(pageData->m_closeBtn), GTK_RELIEF_NONE);
+
+        gtk_box_pack_end(GTK_BOX(pageData->m_box), pageData->m_closeBtn, FALSE, FALSE, 0);
+        gtk_box_reorder_child(GTK_BOX(pageData->m_box), pageData->m_closeBtn, 0);
+
+        g_signal_connect(pageData->m_closeBtn, "clicked", G_CALLBACK(wxgtk_close_page), this);
+
+        gtk_widget_show(pageData->m_closeBtn);        
+    }
 
     DoSetSelectionAfterInsertion(position, select);
 

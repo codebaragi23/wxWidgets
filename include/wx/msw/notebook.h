@@ -107,6 +107,10 @@ public:
   // base class virtuals
   // -------------------
 
+  virtual bool MSWHandleMessage(WXLRESULT* result,
+      WXUINT message,
+      WXWPARAM wParam,
+      WXLPARAM lParam) wxOVERRIDE;
   virtual bool MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result) wxOVERRIDE;
   virtual bool MSWOnScroll(int orientation, WXWORD nSBCode,
                            WXWORD pos, WXHWND control) wxOVERRIDE;

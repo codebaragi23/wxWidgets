@@ -335,12 +335,49 @@ int wxNotebook::SetSelection(size_t nPage)
 void wxNotebook::UpdateSelection(int selNew)
 {
     if ( m_selection != wxNOT_FOUND )
+    {
         m_pages[m_selection]->Show(false);
+        if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS)
+        {
+            wxChar buf[256];
+            TC_ITEM tcItem;
+            tcItem.mask = TCIF_TEXT | TCIF_PARAM;
+            tcItem.pszText = buf;
+            tcItem.cchTextMax = WXSIZEOF(buf);
+            TabCtrl_GetItem(GetHwnd(), m_selection, &tcItem);
+
+            wxString newText = wxString(tcItem.pszText);    newText.Replace("     ", "");
+            tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+            TabCtrl_SetItem(GetHwnd(), m_selection, &tcItem);
+
+            ShowWindow((HWND)tcItem.lParam, SW_HIDE);
+        }
+    }
 
     if ( selNew != wxNOT_FOUND )
     {
         wxNotebookPage *pPage = m_pages[selNew];
         pPage->Show(true);
+
+        if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS)
+        {
+            wxChar buf[256];
+            TC_ITEM tcItem;
+            tcItem.mask = TCIF_TEXT | TCIF_PARAM;
+            tcItem.pszText = buf;
+            tcItem.cchTextMax = WXSIZEOF(buf);
+            TabCtrl_GetItem(GetHwnd(), selNew, &tcItem);
+
+            wxString newText = wxString(tcItem.pszText);    newText += "     ";
+            tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+            TabCtrl_SetItem(GetHwnd(), selNew, &tcItem);
+
+            RECT rect;
+            TabCtrl_GetItemRect(GetHwnd(), selNew, &rect);
+            int btnSize = rect.bottom - rect.top;
+
+            SetWindowPos((HWND)tcItem.lParam, HWND_TOP, rect.right - btnSize, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+        }
 
         // In addition to showing the page, we also want to give focus to it to
         // make it possible to work with it from keyboard easily. However there
@@ -563,7 +600,9 @@ wxNotebookPage *wxNotebook::DoRemovePage(size_t nPage)
     // selected page is visible and others are hidden:
     pageRemoved->Show(false);
 
-    if ( !TabCtrl_DeleteItem(GetHwnd(), nPage) )
+    TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
+    TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
+    if (!DestroyWindow((HWND)tcItem.lParam) || !TabCtrl_DeleteItem(GetHwnd(), nPage))
         wxLogLastError(wxS("TabCtrl_DeleteItem()"));
 
     if ( m_pages.empty() )
@@ -612,6 +651,12 @@ bool wxNotebook::DeleteAllPages()
 {
     wxBookCtrlBase::DeleteAllPages();
 
+    for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
+    {
+        TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
+        TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
+        DestroyWindow((HWND)tcItem.lParam);
+    }
     if ( !TabCtrl_DeleteAllItems(GetHwnd()) )
         wxLogLastError(wxS("TabCtrl_DeleteAllItems()"));
 
@@ -682,6 +727,46 @@ bool wxNotebook::InsertPage(size_t nPage,
 
     // succeeded: save the pointer to the page
     m_pages.insert(m_pages.begin() + nPage, pPage);
+
+    // set the close btn
+    if ((m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS) || (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS))
+    {
+        RECT rect;
+        TabCtrl_GetItemRect(GetHwnd(), nPage, &rect);
+        int btnSize = rect.bottom - rect.top;
+
+        HWND hwnd = CreateWindow(
+            "BUTTON",           // Predefined class; Unicode assumed 
+            "X",                // Button text 
+            WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_FLAT,  // Styles 
+            0,              // x position 
+            0,              // y position 
+            btnSize,       // Button width
+            btnSize,       // Button height
+            GetHwnd(),      // Parent window
+            NULL,           // Assign appropriate control ID
+            wxGetInstance(),
+            NULL);          // Pointer not needed.
+
+        //HICON hIcon = LoadIcon(NULL, IDI_ERROR);
+        //SendMessage(tcItem.hwndCloseBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+
+        if (hwnd == NULL)
+        {
+            wxLogError("Unable to create button window for wxNotebook");
+            return false;
+        }
+
+        wxString newText = strText + "     ";
+        tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+        tcItem.mask |= TCIF_PARAM;
+        tcItem.lParam = (LPARAM)hwnd;
+        TabCtrl_SetItem(GetHwnd(), nPage, &tcItem);
+
+        TabCtrl_GetItemRect(GetHwnd(), nPage, &rect);
+        SetWindowPos((HWND)tcItem.lParam, HWND_TOP, rect.right - btnSize, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    }
+
 
     // we may need to adjust the size again if the notebook size changed:
     // normally this only happens for the first page we add (the tabs which
@@ -1325,6 +1410,36 @@ bool wxNotebook::DoPhase(int WXUNUSED(nPhase))
 // ----------------------------------------------------------------------------
 // wxNotebook Windows message handlers
 // ----------------------------------------------------------------------------
+
+bool
+wxNotebook::MSWHandleMessage(WXLRESULT* result,
+    WXUINT message,
+    WXWPARAM wParam,
+    WXLPARAM lParam)
+{
+    if (message == WM_COMMAND)
+    {
+        WXHWND hwnd = (WXHWND)lParam;
+        for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
+        {
+            TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
+            TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
+            if ((HWND)tcItem.lParam == hwnd)
+            {
+                RemovePage(nPage);
+            }
+        }
+    }
+
+    // prevent close button crash
+    if (message == WM_UPDATEUISTATE && (WXHWND)lParam != GetHwnd())
+    {
+        *result = 0;
+        return true;
+    }
+
+    return wxNotebookBase::MSWHandleMessage(result, message, wParam, lParam);
+}
 
 bool wxNotebook::MSWOnScroll(int orientation, WXWORD nSBCode,
                              WXWORD pos, WXHWND control)

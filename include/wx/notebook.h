@@ -39,15 +39,17 @@ enum
 // wxNotebook flags
 
 // use common book wxBK_* flags for describing alignment
-#define wxNB_DEFAULT          wxBK_DEFAULT
-#define wxNB_TOP              wxBK_TOP
-#define wxNB_BOTTOM           wxBK_BOTTOM
-#define wxNB_LEFT             wxBK_LEFT
-#define wxNB_RIGHT            wxBK_RIGHT
+#define wxNB_DEFAULT                wxBK_DEFAULT
+#define wxNB_TOP                    wxBK_TOP
+#define wxNB_BOTTOM                 wxBK_BOTTOM
+#define wxNB_LEFT                   wxBK_LEFT
+#define wxNB_RIGHT                  wxBK_RIGHT
 
-#define wxNB_FIXEDWIDTH       0x0100
-#define wxNB_MULTILINE        0x0200
-#define wxNB_NOPAGETHEME      0x0400
+#define wxNB_FIXEDWIDTH             0x0100
+#define wxNB_MULTILINE              0x0200
+#define wxNB_NOPAGETHEME            0x0400
+#define wxNB_CLOSE_ON_ACTIVE_TABS   0x0800
+#define wxNB_CLOSE_ON_ALL_TABS      0x1000
 
 
 typedef wxWindow wxNotebookPage;  // so far, any window can be a page
@@ -165,12 +167,16 @@ typedef wxBookCtrlEventFunction wxNotebookEventFunction;
 
 wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_NOTEBOOK_PAGE_CHANGED, wxBookCtrlEvent );
 wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_NOTEBOOK_PAGE_CHANGING, wxBookCtrlEvent );
+wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_NOTEBOOK_PAGE_CLOSED, wxBookCtrlEvent );
 
 #define EVT_NOTEBOOK_PAGE_CHANGED(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_NOTEBOOK_PAGE_CHANGED, winid, wxBookCtrlEventHandler(fn))
 
 #define EVT_NOTEBOOK_PAGE_CHANGING(winid, fn) \
     wx__DECLARE_EVT1(wxEVT_NOTEBOOK_PAGE_CHANGING, winid, wxBookCtrlEventHandler(fn))
+
+#define EVT_NOTEBOOK_PAGE_CLOSED(winid, fn) \
+    wx__DECLARE_EVT1(wxEVT_NOTEBOOK_PAGE_CLOSED, winid, wxBookCtrlEventHandler(fn))
 
 // ----------------------------------------------------------------------------
 // wxNotebook class itself
@@ -195,6 +201,7 @@ wxDECLARE_EXPORTED_EVENT( WXDLLIMPEXP_CORE, wxEVT_NOTEBOOK_PAGE_CHANGING, wxBook
 // old wxEVT_COMMAND_* constants
 #define wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED    wxEVT_NOTEBOOK_PAGE_CHANGED
 #define wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGING   wxEVT_NOTEBOOK_PAGE_CHANGING
+#define wxEVT_COMMAND_NOTEBOOK_PAGE_CLOSED   wxEVT_NOTEBOOK_PAGE_CLOSED
 
 #endif // wxUSE_NOTEBOOK
 

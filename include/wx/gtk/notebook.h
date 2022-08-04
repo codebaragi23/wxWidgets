@@ -108,6 +108,7 @@ public:
 
     // Called by GTK event handler when the current page is definitely changed.
     void GTKOnPageChanged();
+    void GTKOnClosePage(GtkWidget* widget);
 
     // helper function
     wxGtkNotebookPage* GetNotebookPage(int page) const;
@@ -121,6 +122,8 @@ public:
     int m_oldSelection;
 
 protected:
+    void SendPageCloseEvent(int nPage);
+
     // set all page's attributes
     virtual void DoApplyWidgetStyle(GtkRcStyle *style) wxOVERRIDE;
     virtual GdkWindow *GTKGetWindow(wxArrayGdkWindows& windows) const wxOVERRIDE;
