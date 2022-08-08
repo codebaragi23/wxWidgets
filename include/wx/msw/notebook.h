@@ -115,6 +115,9 @@ public:
   virtual bool MSWOnScroll(int orientation, WXWORD nSBCode,
                            WXWORD pos, WXHWND control) wxOVERRIDE;
 
+  void AdjustCloseBtn(size_t nPage=-1);
+  void AdjustCloseBtns();
+
 #if wxUSE_CONSTRAINTS
   virtual void SetConstraintSizes(bool recurse = true) wxOVERRIDE;
   virtual bool DoPhase(int nPhase) wxOVERRIDE;

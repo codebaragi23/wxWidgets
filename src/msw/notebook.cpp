@@ -346,7 +346,8 @@ void wxNotebook::UpdateSelection(int selNew)
             tcItem.cchTextMax = WXSIZEOF(buf);
             TabCtrl_GetItem(GetHwnd(), m_selection, &tcItem);
 
-            wxString newText = wxString(tcItem.pszText);    newText.Replace("     ", "");
+            wxString newText = wxString(tcItem.pszText);
+            if (newText.Right(5) == "     ")    newText = newText.Left(newText.Length() - 5);
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
             TabCtrl_SetItem(GetHwnd(), m_selection, &tcItem);
 
@@ -363,20 +364,17 @@ void wxNotebook::UpdateSelection(int selNew)
         {
             wxChar buf[256];
             TC_ITEM tcItem;
-            tcItem.mask = TCIF_TEXT | TCIF_PARAM;
+            tcItem.mask = TCIF_TEXT;
             tcItem.pszText = buf;
             tcItem.cchTextMax = WXSIZEOF(buf);
             TabCtrl_GetItem(GetHwnd(), selNew, &tcItem);
 
-            wxString newText = wxString(tcItem.pszText);    newText += "     ";
+            wxString newText = wxString(tcItem.pszText);
+            newText += "     ";
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
             TabCtrl_SetItem(GetHwnd(), selNew, &tcItem);
 
-            RECT rect;
-            TabCtrl_GetItemRect(GetHwnd(), selNew, &rect);
-            int btnSize = rect.bottom - rect.top;
-
-            SetWindowPos((HWND)tcItem.lParam, HWND_TOP, rect.right - btnSize, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+            AdjustCloseBtn(selNew);
         }
 
         // In addition to showing the page, we also want to give focus to it to
@@ -396,6 +394,33 @@ void wxNotebook::UpdateSelection(int selNew)
     }
 
     m_selection = selNew;
+}
+
+void wxNotebook::AdjustCloseBtn(size_t nPage)
+{
+    nPage = nPage == -1 ? m_selection : nPage;
+    TC_ITEM tcItem;
+    tcItem.mask = TCIF_PARAM;
+    TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
+
+    RECT rect;
+    TabCtrl_GetItemRect(GetHwnd(), nPage, &rect);
+    int btnSize = rect.bottom - rect.top;
+
+    SetWindowPos((HWND)tcItem.lParam, HWND_TOP, rect.right - btnSize, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+void wxNotebook::AdjustCloseBtns()
+{
+    if (m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS)
+        AdjustCloseBtn();
+    else if (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS)
+    {
+        for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
+        {
+            AdjustCloseBtn(nPage);
+        }
+    }
 }
 
 int wxNotebook::ChangeSelection(size_t nPage)
@@ -738,7 +763,7 @@ bool wxNotebook::InsertPage(size_t nPage,
         HWND hwnd = CreateWindow(
             "BUTTON",           // Predefined class; Unicode assumed 
             "X",                // Button text 
-            WS_VISIBLE | WS_CHILD | WS_TABSTOP | BS_FLAT,  // Styles 
+            WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,  // Styles 
             0,              // x position 
             0,              // y position 
             btnSize,       // Button width
@@ -757,8 +782,11 @@ bool wxNotebook::InsertPage(size_t nPage,
             return false;
         }
 
-        wxString newText = strText + "     ";
-        tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+        if (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS)
+        {
+            wxString newText = strText + "     ";
+            tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+        }
         tcItem.mask |= TCIF_PARAM;
         tcItem.lParam = (LPARAM)hwnd;
         TabCtrl_SetItem(GetHwnd(), nPage, &tcItem);
@@ -797,9 +825,8 @@ bool wxNotebook::InsertPage(size_t nPage,
     }
 
     DoSetSelectionAfterInsertion(nPage, bSelect);
-
     InvalidateBestSize();
-
+    AdjustCloseBtns();
     return true;
 }
 
@@ -941,6 +968,7 @@ void wxNotebook::OnPaint(wxPaintEvent& WXUNUSED(event))
     }
 
     dc.Blit(0, 0, rc.right, rc.bottom, &memdc, 0, 0);
+    AdjustCloseBtns();
 }
 
 #endif // USE_NOTEBOOK_ANTIFLICKER
@@ -1057,19 +1085,23 @@ void wxNotebook::OnSize(wxSizeEvent& event)
               child;
               child = ::GetWindow(child, GW_HWNDNEXT) )
         {
-            wxWindow *childWindow = wxFindWinFromHandle((WXHWND)child);
-
-            // see if it exists, if no wxWindow found then assume it's the spin
-            // btn
-            if ( !childWindow )
+            wxChar classname[100];  GetClassName(child, classname, 100);
+            if (!wxStricmp_String(classname, UPDOWN_CLASS))
             {
-                // subclass the spin button to override WM_ERASEBKGND
-                if ( !gs_wndprocNotebookSpinBtn )
-                    gs_wndprocNotebookSpinBtn = wxGetWindowProc(child);
+                wxWindow *childWindow = wxFindWinFromHandle((WXHWND)child);
 
-                wxSetWindowProc(child, wxNotebookSpinBtnWndProc);
-                m_hasSubclassedUpdown = true;
-                break;
+                // see if it exists, if no wxWindow found then assume it's the spin
+                // btn
+                if ( !childWindow )
+                {
+                    // subclass the spin button to override WM_ERASEBKGND
+                    if ( !gs_wndprocNotebookSpinBtn )
+                        gs_wndprocNotebookSpinBtn = wxGetWindowProc(child);
+
+                    wxSetWindowProc(child, wxNotebookSpinBtnWndProc);
+                    m_hasSubclassedUpdown = true;
+                    break;
+                }
             }
         }
     }
