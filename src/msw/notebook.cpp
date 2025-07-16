@@ -347,7 +347,7 @@ void wxNotebook::UpdateSelection(int selNew)
             TabCtrl_GetItem(GetHwnd(), m_selection, &tcItem);
 
             wxString newText = wxString(tcItem.pszText);
-            if (newText.Right(5) == "     ")    newText = newText.Left(newText.Length() - 5);
+            if (newText.Right(5) == wxT("     "))    newText = newText.Left(newText.Length() - 5);
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
             TabCtrl_SetItem(GetHwnd(), m_selection, &tcItem);
 
@@ -370,7 +370,7 @@ void wxNotebook::UpdateSelection(int selNew)
             TabCtrl_GetItem(GetHwnd(), selNew, &tcItem);
 
             wxString newText = wxString(tcItem.pszText);
-            newText += "     ";
+            newText += wxT("     ");
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
             TabCtrl_SetItem(GetHwnd(), selNew, &tcItem);
 
@@ -782,11 +782,10 @@ bool wxNotebook::InsertPage(size_t nPage,
             return false;
         }
 
+        wxString newText = strText + wxT("     ");
         if (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS)
-        {
-            wxString newText = strText + "     ";
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
-        }
+
         tcItem.mask |= TCIF_PARAM;
         tcItem.lParam = (LPARAM)hwnd;
         TabCtrl_SetItem(GetHwnd(), nPage, &tcItem);
@@ -1518,3 +1517,4 @@ bool wxNotebook::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM* result)
 }
 
 #endif // wxUSE_NOTEBOOK
+
