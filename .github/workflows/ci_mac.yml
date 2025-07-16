@@ -5,12 +5,14 @@ on:
   push:
     branches: [ master ]
     paths-ignore:
+    - '.circleci/**'
     - '.github/ISSUE_TEMPLATE/**'
     - '.github/workflows/ci.yml'
     - '.github/workflows/ci_cmake.yml'
     - '.github/workflows/ci_msw.yml'
     - '.github/workflows/ci_msw_cross.yml'
     - '.github/workflows/docs_update.yml'
+    - 'build/cmake/**'
     - 'build/tools/appveyor*.bat'
     - 'distrib/**'
     - 'docs/**'
@@ -31,16 +33,19 @@ on:
     - 'src/x11/**'
     - '*.md'
     - '*.yml'
+    - 'CMakeLists.txt'
     - 'wxwidgets.props'
   pull_request:
     branches: [ master ]
     paths-ignore:
+    - '.circleci/**'
     - '.github/ISSUE_TEMPLATE/**'
     - '.github/workflows/ci.yml'
     - '.github/workflows/ci_cmake.yml'
     - '.github/workflows/ci_msw.yml'
     - '.github/workflows/ci_msw_cross.yml'
     - '.github/workflows/docs_update.yml'
+    - 'build/cmake/**'
     - 'build/tools/appveyor*.bat'
     - 'distrib/**'
     - 'docs/**'
@@ -61,6 +66,7 @@ on:
     - 'src/x11/**'
     - '*.md'
     - '*.yml'
+    - 'CMakeLists.txt'
     - 'wxwidgets.props'
 
 permissions:
@@ -93,12 +99,12 @@ jobs:
           runner: self-hosted
           arch: arm64
           configure_flags: --with-cxx=14 --enable-universal_binary=arm64,x86_64 --disable-shared --disable-debug --enable-optimise
-        - name: wxMac macOS 10.15
-          runner: macos-10.15
+        - name: wxMac macOS 14
+          runner: macos-14
           arch: x86_64
           configure_flags: --disable-sys-libs
         - name: wxiOS
-          runner: macos-10.15
+          runner: macos-14
           arch: x86_64
           configure_flags: --with-osx_iphone --enable-monolithic  --disable-sys-libs --host=i686-apple-darwin_sim --build=x86_64-apple-darwin17.7.0
           xcode_sdk: iphonesimulator
@@ -114,7 +120,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
@@ -200,6 +206,12 @@ jobs:
       run: |
         make -C tests $wxBUILD_ARGS failtest
         make -k -C tests $wxBUILD_ARGS "CXXFLAGS=$wxMAKEFILE_CXXFLAGS" "LDFLAGS=$wxMAKEFILE_LDFLAGS"
+
+    - name: Setup Go
+      if: matrix.skip_testing != true
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1'
 
     - name: Testing
       if: matrix.skip_testing != true

@@ -99,6 +99,28 @@
     #endif // wxUSE_SPELLCHECK
 #endif // wxUSE_RICHEDIT
 
+#if wxUSE_RICHEDIT2
+    // Note that some MinGW headers define PFN_BULLET but not the rest of them,
+    // so test for something else.
+    #ifndef PFN_ARABIC
+        #define PFN_BULLET      1
+        #define PFN_ARABIC      2
+        #define PFN_LCLETTER    3
+        #define PFN_UCLETTER    4
+        #define PFN_LCROMAN     5
+        #define PFN_UCROMAN     6
+    #endif
+
+    #ifndef PFNS_PAREN
+        #define PFNS_PAREN      0x0000
+        #define PFNS_PARENS     0x0100
+        #define PFNS_PERIOD     0x0200
+        #define PFNS_PLAIN      0x0300
+        #define PFNS_NONUMBER   0x0400
+        #define PFNS_NEWNUMBER  0x8000
+    #endif
+#endif // wxUSE_RICHEDIT2
+
 #if wxUSE_INKEDIT
     #include <wx/dynlib.h>
 #endif
@@ -391,6 +413,25 @@ void wxTextCtrl::Init()
     m_privateContextMenu = NULL;
     m_updatesCount = -1;
     m_isNativeCaretShown = true;
+}
+
+wxTextCtrl::wxTextCtrl()
+{
+    Init();
+}
+
+wxTextCtrl::wxTextCtrl(wxWindow *parent,
+                       wxWindowID id,
+                       const wxString& value,
+                       const wxPoint& pos,
+                       const wxSize& size,
+                       long style,
+                       const wxValidator& validator,
+                       const wxString& name)
+{
+    Init();
+
+    Create(parent, id, value, pos, size, style, validator, name);
 }
 
 wxTextCtrl::~wxTextCtrl()
@@ -2782,10 +2823,9 @@ wxSize wxTextCtrl::DoGetSizeFromTextSize(int xlen, int ylen) const
         hText += EDIT_HEIGHT_FROM_CHAR_HEIGHT(cy) - cy;
     }
 
-    // Perhaps the user wants something different from CharHeight, or ylen
-    // is used as the height of a multiline text.
-    if ( ylen > 0 )
-        hText += ylen - GetCharHeight();
+    // We should always use at least the specified height if it's valid.
+    if ( ylen > hText )
+        hText = ylen;
 
     return wxSize(wText, hText);
 }
@@ -3225,7 +3265,7 @@ bool wxTextCtrl::MSWSetCharFormat(const wxTextAttr& style, long start, long end)
     if ( style.HasFont() )
     {
         // VZ: CFM_CHARSET doesn't seem to do anything at all in RichEdit 2.0
-        //     but using it doesn't seem to hurt neither so leaving it for now
+        //     but using it doesn't seem to hurt either so leaving it for now
 
         cf.dwMask |= CFM_FACE | CFM_SIZE | CFM_CHARSET |
                      CFM_ITALIC | CFM_BOLD | CFM_UNDERLINE | CFM_STRIKEOUT;
@@ -3408,6 +3448,24 @@ bool wxTextCtrl::MSWSetParaFormat(const wxTextAttr& style, long start, long end)
     }
 
 #if wxUSE_RICHEDIT2
+    if ( style.HasLineSpacing() )
+    {
+        pf.dwMask |= PFM_LINESPACING;
+
+        switch ( style.GetLineSpacing() )
+            {
+        case wxTEXT_ATTR_LINE_SPACING_NORMAL:
+            pf.bLineSpacingRule = 0;
+            break;
+        case wxTEXT_ATTR_LINE_SPACING_HALF:
+            pf.bLineSpacingRule = 1;
+            break;
+        case wxTEXT_ATTR_LINE_SPACING_TWICE:
+            pf.bLineSpacingRule = 2;
+            break;
+            };
+    }
+
     if ( style.HasParagraphSpacingAfter() )
     {
         pf.dwMask |= PFM_SPACEAFTER;
@@ -3422,6 +3480,44 @@ bool wxTextCtrl::MSWSetParaFormat(const wxTextAttr& style, long start, long end)
 
         // Convert from 1/10 mm to TWIPS
         pf.dySpaceBefore = (int) (((double) style.GetParagraphSpacingBefore()) * mm2twips / 10.0) ;
+    }
+
+    if ( style.HasBulletStyle() )
+    {
+        pf.dwMask |= PFM_NUMBERINGSTYLE;
+        pf.dwMask |= PFM_NUMBERING;
+
+        // number/bullet formats
+        if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_NONE) != 0)
+            pf.wNumbering = 0;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_STANDARD) != 0)
+            pf.wNumbering = PFN_BULLET;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_ARABIC) != 0)
+            pf.wNumbering = PFN_ARABIC;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_LETTERS_LOWER) != 0)
+            pf.wNumbering = PFN_LCLETTER;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_LETTERS_UPPER) != 0)
+            pf.wNumbering = PFN_UCLETTER;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_ROMAN_LOWER) != 0)
+            pf.wNumbering = PFN_LCROMAN;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_ROMAN_UPPER) != 0)
+            pf.wNumbering = PFN_UCROMAN;
+
+        // number display
+        if ( style.HasBulletNumber() )
+        {
+            pf.dwMask |= PFM_NUMBERINGSTART;
+            pf.wNumberingStart = style.GetBulletNumber();
+            pf.wNumberingStyle = PFNS_NEWNUMBER;
+        }
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_RIGHT_PARENTHESIS) != 0)
+            pf.wNumberingStyle = PFNS_PAREN;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_PARENTHESES) != 0)
+            pf.wNumberingStyle = PFNS_PARENS;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_PERIOD) != 0)
+            pf.wNumberingStyle = PFNS_PERIOD;
+        else if ((style.GetBulletStyle() & wxTEXT_ATTR_BULLET_STYLE_STANDARD) != 0)
+            pf.wNumberingStyle = PFNS_PLAIN;
     }
 #endif // wxUSE_RICHEDIT2
 

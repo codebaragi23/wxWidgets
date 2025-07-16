@@ -168,6 +168,12 @@ void
 wxImageList::GetImageListBitmaps(wxMSWBitmaps& bitmaps,
                                  const wxBitmap& bitmap, const wxBitmap& mask)
 {
+    if (!bitmap.IsOk())
+    {
+        // We can't do anything with an invalid bitmap.
+        return;
+    }
+
     // This can be overwritten below if we need to modify the bitmap, but it
     // doesn't cost anything to initialize the bitmap with this HBITMAP.
     bitmaps.hbmp = GetHbitmapOf(bitmap);
@@ -197,7 +203,7 @@ wxImageList::GetImageListBitmaps(wxMSWBitmaps& bitmaps,
             if ( !bmp.HasAlpha() )
                 bmp.SetMask(new wxMask(bmp, GetDefaultMaskColour()));
         }
-        else
+        else if ( !bmp.HasAlpha() )
         {
             // We actually don't have to do anything at all and can just use
             // the original bitmap as is.
@@ -270,7 +276,7 @@ wxImageList::GetImageListBitmaps(wxMSWBitmaps& bitmaps,
             maskToUse.MSWCreateFromImageMask(img);
         }
 #endif // wxUSE_WXDIB && wxUSE_IMAGE
-        // We don't have neither mask nor alpha, only force creating the
+        // We don't have either mask nor alpha, only force creating the
         // mask from colour if requested to do it.
         else if ( m_useMask )
         {

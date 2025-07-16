@@ -12,13 +12,28 @@ if(NOT wxBUILD_INSTALL)
 endif()
 
 install(CODE "message(STATUS \"Installing: Headers...\")")
-install(
-    DIRECTORY "${wxSOURCE_DIR}/include/wx"
-    DESTINATION "${wxINSTALL_INCLUDE_DIR}")
+
+foreach(header ${wxINSTALL_HEADERS})
+    get_filename_component(path "${header}" PATH)
+    install(
+        FILES "${wxSOURCE_DIR}/include/${header}"
+        DESTINATION "${wxINSTALL_INCLUDE_DIR}/${path}"
+    )
+endforeach()
+
 if(MSVC)
     install(
         DIRECTORY "${wxSOURCE_DIR}/include/msvc"
-        DESTINATION "${wxINSTALL_INCLUDE_DIR}")
+        DESTINATION "${wxINSTALL_INCLUDE_DIR}"
+    )
+    install(
+        FILES "${wxSOURCE_DIR}/wxwidgets.props"
+        DESTINATION "."
+    )
+    install(
+        FILES "${wxSOURCE_DIR}/build/msw/wx_setup.props"
+        DESTINATION "build/msw"
+    )
 endif()
 
 # setup header and wx-config
@@ -42,8 +57,8 @@ else()
     install(DIRECTORY DESTINATION "bin")
     install(CODE "execute_process( \
         COMMAND ${CMAKE_COMMAND} -E create_symlink \
-        ${CMAKE_INSTALL_PREFIX}/lib/wx/config/${wxBUILD_FILE_ID} \
-        ${CMAKE_INSTALL_PREFIX}/bin/wx-config \
+        \"${CMAKE_INSTALL_PREFIX}/lib/wx/config/${wxBUILD_FILE_ID}\" \
+        \"\$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/wx-config\" \
         )"
     )
 endif()

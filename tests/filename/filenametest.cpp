@@ -381,7 +381,7 @@ TEST_CASE("wxFileName::Normalize", "[filename]")
             wxRegKey::HKLM,
             "SYSTEM\\CurrentControlSet\\Control\\FileSystem"
          ).QueryValue("NtfsDisable8dot3NameCreation", &shortNamesDisabled) &&
-            shortNamesDisabled != 1 )
+            shortNamesDisabled != 1 && !IsAutomaticTest() )
     {
         wxFileName fn("TESTDA~1.CON");
         CHECK( fn.Normalize(wxPATH_NORM_LONG, cwd) );
@@ -792,7 +792,7 @@ TEST_CASE("wxFileName::SameAs", "[filename]")
 
 #if defined(__UNIX__)
     // We need to create a temporary directory and a temporary link.
-    // Unfortunately we can't use wxFileName::CreateTempFileName() for neither
+    // Unfortunately we can't use wxFileName::CreateTempFileName() for either
     // as it creates plain files, so use tempnam() explicitly instead.
     char* tn = tempnam(NULL, "wxfn1");
     const wxString tempdir1 = wxString::From8BitData(tn);
@@ -1039,6 +1039,12 @@ TEST_CASE("wxFileName::GetSizeSpecial", "[filename][linux][special-file]")
     wxULongLong size = wxFileName::GetSize("/proc/kcore");
     INFO( "size of /proc/kcore=" << size );
     CHECK( size > 0 );
+
+    if ( !wxFile::Exists("/sys/power/state") )
+    {
+        WARN("/sys/power/state doesn't exist, skipping test");
+        return;
+    }
 
     // All files in /sys are one page in size, irrespectively of the size of
     // their actual contents.

@@ -1307,7 +1307,7 @@ bool wxToolBar::Realize()
         if ( IsVertical() )
         {
             // don't embed controls in the vertical toolbar, this doesn't look
-            // good and wxGTK doesn't do it neither (and the code below can't
+            // good and wxGTK doesn't do it either (and the code below can't
             // deal with this case)
             control->Hide();
             if ( wxStaticText * const staticText = tool->GetStaticText() )
@@ -1895,7 +1895,8 @@ void wxToolBar::SetToolPacking(int packing)
 // Responds to colour changes, and passes event on to children.
 void wxToolBar::OnSysColourChanged(wxSysColourChangedEvent& event)
 {
-    wxRGBToColour(m_backgroundColour, ::GetSysColor(COLOR_BTNFACE));
+    if ( !UseBgCol() )
+        wxRGBToColour(m_backgroundColour, ::GetSysColor(COLOR_BTNFACE));
 
     // Remap the buttons
     Realize();

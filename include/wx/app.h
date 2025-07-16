@@ -136,6 +136,12 @@ public:
     // Called from wxExit() function, should terminate the application a.s.a.p.
     virtual void Exit();
 
+    // Allows to set a custom process exit code if OnInit() returns false.
+#if wxABI_VERSION >= 30207
+    void SetErrorExitCode(int code);
+    int GetErrorExitCode() const;
+#endif // wxABI_VERSION >= 3.2.7
+
 
     // application info: name, description, vendor
     // -------------------------------------------
@@ -153,7 +159,7 @@ public:
         // used for paths, config, and other places the user doesn't see
         //
         // by default the display name is the same as app name or a capitalized
-        // version of the program if app name was not set neither but it's
+        // version of the program if app name was not set either but it's
         // usually better to set it explicitly to something nicer
     wxString GetAppDisplayName() const;
 
@@ -866,7 +872,7 @@ public:
     #define wxIMPLEMENT_WXWIN_MAIN          wxIMPLEMENT_WXWIN_MAIN_CONSOLE
 #endif // defined(wxIMPLEMENT_WXWIN_MAIN)
 
-#ifdef __WXUNIVERSAL__
+#if defined(__WXUNIVERSAL__) && wxUSE_GUI
     #include "wx/univ/theme.h"
 
     #ifdef wxUNIV_DEFAULT_THEME

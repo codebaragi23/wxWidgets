@@ -134,7 +134,7 @@ public:
     @library{wxcore}
     @category{misc}
 
-    @see wxBeginBusyCursor(), wxEndBusyCursor(), wxWindowDisabler
+    @see wxBeginBusyCursor(), wxEndBusyCursor(), wxWindowDisabler, wxBusyInfo
 */
 class wxBusyCursor
 {
@@ -158,7 +158,7 @@ public:
 
 
 /** @addtogroup group_funcmacro_dialog */
-//@{
+///@{
 
 /**
     Changes the cursor to the given cursor for all windows in the application.
@@ -218,10 +218,10 @@ void wxBell();
 */
 void wxInfoMessageBox(wxWindow* parent);
 
-//@}
+///@}
 
 /** @addtogroup group_funcmacro_version */
-//@{
+///@{
 
 /**
     Get wxWidgets version information.
@@ -236,12 +236,12 @@ void wxInfoMessageBox(wxWindow* parent);
 */
 wxVersionInfo wxGetLibraryVersionInfo();
 
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_env */
-//@{
+///@{
 
 /**
     A map type containing environment variables names and values.
@@ -332,12 +332,12 @@ bool wxUnsetEnv(const wxString& var);
     @since 2.9.2
 */
 bool wxGetEnvMap(wxEnvVariableHashMap *map);
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_misc */
-//@{
+///@{
 
 /**
     Fills the memory block with zeros in a way that is guaranteed
@@ -771,12 +771,12 @@ enum
 */
 wxString wxStripMenuCodes(const wxString& str, int flags = wxStrip_All);
 
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_networkuseros */
-//@{
+///@{
 
 /**
     Copies the user's email address into the supplied buffer, by concatenating
@@ -959,16 +959,22 @@ wxString wxGetOsDescription();
             <th>Build number</th>
         </tr>
         <tr>
+            <td>Windows Server 2025</td>
+            <td>10</td>
+            <td>0</td>
+            <td>26100</td>
+        </tr>
+        <tr>
             <td>Windows 11</td>
             <td>10</td>
             <td>0</td>
-            <td>&gt;= 22000</td>
+            <td>&ge; 22000</td>
         </tr>
         <tr>
             <td>Windows Server 2022</td>
             <td>10</td>
             <td>0</td>
-            <td>&gt;= 22000</td>
+            <td>20348</td>
         </tr>
         <tr>
             <td>Windows 10</td>
@@ -977,10 +983,16 @@ wxString wxGetOsDescription();
             <td></td>
         </tr>
         <tr>
+            <td>Windows Server 2019</td>
+            <td>10</td>
+            <td>0</td>
+            <td>17763</td>
+        </tr>
+        <tr>
             <td>Windows Server 2016</td>
             <td>10</td>
             <td>0</td>
-            <td></td>
+            <td>14393</td>
         </tr>
         <tr>
             <td>Windows 8.1</td>
@@ -1049,7 +1061,7 @@ wxString wxGetOsDescription();
             <td></td>
         </tr>
     </table>
-    See the <a href="http://msdn.microsoft.com/en-us/library/ms724832(VS.85).aspx">MSDN</a>
+    See the <a href="https://learn.microsoft.com/en-us/windows/win32/sysinfo/operating-system-version">Microsoft documentation</a>
     for more info about the values above.
 
     @see wxGetOsDescription(), wxPlatformInfo
@@ -1140,17 +1152,17 @@ wxString wxGetNativeCpuArchitectureName();
     case it's not available, then this function will return a ::wxLinuxDistributionInfo
     structure containing empty strings.
 
-    This function is Linux-specific and is only available when the @c __LINUX__
+    This function is Linux-specific and is only available when the @c \__LINUX__
     symbol is defined.
 */
 wxLinuxDistributionInfo wxGetLinuxDistributionInfo();
 
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_procctrl */
-//@{
+///@{
 
 /**
     @struct wxExecuteEnv
@@ -1348,10 +1360,10 @@ enum
 long wxExecute(const wxString& command, int flags = wxEXEC_ASYNC,
                 wxProcess* callback = NULL,
                 const wxExecuteEnv* env = NULL);
-//@}
+///@}
 
 /** @addtogroup group_funcmacro_procctrl */
-//@{
+///@{
 /**
     This is an overloaded version of wxExecute(const wxString&,int,wxProcess*),
     please see its documentation for general information.
@@ -1387,10 +1399,10 @@ long wxExecute(const char* const* argv, int flags = wxEXEC_ASYNC,
 long wxExecute(const wchar_t* const* argv, int flags = wxEXEC_ASYNC,
                 wxProcess* callback = NULL,
                 const wxExecuteEnv *env = NULL);
-//@}
+///@}
 
 /** @addtogroup group_funcmacro_procctrl */
-//@{
+///@{
 
 /**
     This is an overloaded version of wxExecute(const wxString&,int,wxProcess*),
@@ -1566,12 +1578,12 @@ bool wxShell(const wxString& command = wxEmptyString);
 */
 bool wxShutdown(int flags = wxSHUTDOWN_POWEROFF);
 
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_time */
-//@{
+///@{
 
 /**
     Sleeps for the specified number of microseconds. The microsecond resolution
@@ -1618,11 +1630,11 @@ void wxSleep(int secs);
 */
 void wxUsleep(unsigned long milliseconds);
 
-//@}
+///@}
 
 
 /** @addtogroup group_funcmacro_misc */
-//@{
+///@{
 /**
     Convert decimal integer to 2-character hexadecimal string.
 
@@ -1692,4 +1704,4 @@ int wxHexToDec(const wxString& buf);
     @overload
 */
 int wxHexToDec(const char* buf);
-//@}
+///@}

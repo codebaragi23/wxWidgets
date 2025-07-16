@@ -565,7 +565,7 @@ bool wxWindowBase::Destroy()
     // this wxWindow object was default-constructed and its Create() method had
     // never been called. As we didn't send wxWindowCreateEvent in this case
     // (which is sent after successful creation), don't send the matching
-    // wxWindowDestroyEvent neither.
+    // wxWindowDestroyEvent either.
     if ( GetHandle() )
         SendDestroyEvent();
 
@@ -3071,6 +3071,7 @@ bool wxWindowBase::PopupMenu(wxMenu *menu, int x, int y)
         setInvokingWin(*menu, static_cast<wxWindow *>(this));
 
     wxCurrentPopupMenu = menu;
+    menu->UpdateUI();
     const bool rc = DoPopupMenu(menu, x, y);
     wxCurrentPopupMenu = NULL;
 

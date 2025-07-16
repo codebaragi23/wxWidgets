@@ -282,7 +282,7 @@ enum wxWindowVariant
     @endExtraStyleTable
 
     @beginEventEmissionTable
-    @event{EVT_ACTIVATE(id, func)}
+    @event{EVT_ACTIVATE(func)}
         Process a @c wxEVT_ACTIVATE event. See wxActivateEvent.
     @event{EVT_CHILD_FOCUS(func)}
         Process a @c wxEVT_CHILD_FOCUS event. See wxChildFocusEvent.
@@ -461,7 +461,7 @@ public:
 
         See also the static function FindFocus().
     */
-    //@{
+    ///@{
 
     /**
         This method may be overridden in the derived classes to return @false to
@@ -573,13 +573,13 @@ public:
     */
     virtual void SetFocusFromKbd();
 
-    //@}
+    ///@}
 
 
     /**
         @name Child management functions
     */
-    //@{
+    ///@{
 
     /**
         Adds a child window. This is called automatically by window creation
@@ -643,13 +643,13 @@ public:
     */
     virtual void RemoveChild(wxWindow* child);
 
-    //@}
+    ///@}
 
 
     /**
         @name Sibling and parent management functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the grandparent of a window, or @NULL if there isn't one.
@@ -710,7 +710,7 @@ public:
     */
     virtual bool Reparent(wxWindow* newParent);
 
-    //@}
+    ///@}
 
 
     /**
@@ -719,7 +719,7 @@ public:
         Note that these methods don't work with native controls which don't use
         wxWidgets scrolling framework (i.e. don't derive from wxScrolledWindow).
     */
-    //@{
+    ///@{
 
     /**
         Call this function to force one or both scrollbars to be always shown, even if
@@ -918,7 +918,7 @@ public:
     virtual void SetScrollbar(int orientation, int position,
                               int thumbSize, int range,
                               bool refresh = true);
-    //@}
+    ///@}
 
 
     /**
@@ -927,7 +927,7 @@ public:
         See also the protected functions DoGetBestSize() and
         DoGetBestClientSize().
     */
-    //@{
+    ///@{
 
     /**
         Helper for ensuring EndRepositioningChildren() is called correctly.
@@ -1638,6 +1638,10 @@ public:
         the border or title bar have when trying to fit the window around panel
         items, for example.
 
+        Note that special value of -1 which can be used in some other functions
+        to preserve the existing size is @e not supported for @a width and @a
+        height here, i.e. they both must be valid, positive integers.
+
         @see @ref overview_windowsizing
     */
     void SetClientSize(int width, int height);
@@ -1834,13 +1838,13 @@ public:
     */
     void SetVirtualSize(const wxSize& size);
 
-    //@}
+    ///@}
 
 
     /**
         @name Positioning functions
     */
-    //@{
+    ///@{
 
     /**
         A synonym for Centre().
@@ -2004,13 +2008,13 @@ public:
      */
     void SetPosition(const wxPoint& pt);
 
-    //@}
+    ///@}
 
 
     /**
         @name Coordinate conversion functions
     */
-    //@{
+    ///@{
 
     /**
         Converts to screen coordinates from coordinates relative to this window.
@@ -2100,13 +2104,13 @@ public:
     */
     wxPoint ScreenToClient(const wxPoint& pt) const;
 
-    //@}
+    ///@}
 
 
     /**
         @name Drawing-related functions
     */
-    //@{
+    ///@{
 
     /**
         Clears the window by filling it with the current background colour.
@@ -2320,9 +2324,23 @@ public:
     void RefreshRect(const wxRect& rect, bool eraseBackground = true);
 
     /**
-        Calling this method immediately repaints the invalidated area of the window and
-        all of its children recursively (this normally only happens when the
-        flow of control returns to the event loop).
+        Immediately repaints the invalidated area of the window and all of its
+        children recursively.
+
+        @note
+            This function is not guaranteed to be implemented in all ports,
+            notably it doesn't do anything in wxGTK port when using Wayland.
+
+        Normally, windows are only repainted when a ::wxEVT_PAINT is generated,
+        which can't happen before the flow of control returns to the event
+        loop. This doesn't create any problems in well-written applications
+        that don't spend too much time in their event handlers. However, if
+        some event handler performs a long-running operation, this function may
+        be used to make the changes appear on the screen immediately, before
+        waiting for its completion. Please note that it is _not_ recommended to
+        do this and the preferred way to ensure that the UI is updated is to
+        perform all time consuming operations in background threads and avoid
+        blocking the main thread.
 
         Notice that this function doesn't invalidate any area of the window so
         nothing happens if nothing has been invalidated (i.e. marked as requiring
@@ -2599,7 +2617,7 @@ public:
     */
     virtual bool SetTransparent(wxByte alpha);
 
-    //@}
+    ///@}
 
 
     /**
@@ -2608,7 +2626,7 @@ public:
         wxWindow allows you to build a (sort of) stack of event handlers which
         can be used to override the window's own event handling.
     */
-    //@{
+    ///@{
 
     /**
         Returns the event handler for this window.
@@ -2767,14 +2785,14 @@ public:
     */
     virtual void SetPreviousHandler(wxEvtHandler* handler);
 
-    //@}
+    ///@}
 
 
 
     /**
         @name Window styles functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the extra style bits for the window.
@@ -2843,13 +2861,13 @@ public:
     */
     bool ToggleWindowStyle(int flag);
 
-    //@}
+    ///@}
 
 
     /**
         @name Tab order functions
     */
-    //@{
+    ///@{
 
     /**
         Moves this window in the tab navigation order after the specified @e win.
@@ -2900,14 +2918,14 @@ public:
     */
     bool NavigateIn(int flags = wxNavigationKeyEvent::IsForward);
 
-    //@}
+    ///@}
 
 
 
     /**
         @name Z order functions
     */
-    //@{
+    ///@{
 
     /**
         Lowers the window to the bottom of the window hierarchy (Z-order).
@@ -2935,13 +2953,13 @@ public:
     */
     virtual void Raise();
 
-    //@}
+    ///@}
 
 
     /**
         @name Window status functions
     */
-    //@{
+    ///@{
 
 
     /**
@@ -3082,13 +3100,13 @@ public:
     virtual bool ShowWithEffect(wxShowEffect effect,
                                 unsigned int timeout = 0);
 
-    //@}
+    ///@}
 
 
     /**
         @name Context-sensitive help functions
     */
-    //@{
+    ///@{
 
     /**
         Gets the help text to be used as context-sensitive help for this window.
@@ -3160,13 +3178,13 @@ public:
      */
     void UnsetToolTip();
 
-    //@}
+    ///@}
 
 
     /**
         @name Popup/context menu functions
     */
-    //@{
+    ///@{
 
     /**
         This function shows a popup menu at the given position in this window and
@@ -3238,13 +3256,13 @@ public:
     */
     bool PopupMenu(wxMenu* menu, int x, int y);
 
-    //@}
+    ///@}
 
 
     /**
         Validator functions
     */
-    //@{
+    ///@{
 
     /**
         Returns a pointer to the current validator for the window, or @NULL if
@@ -3294,13 +3312,13 @@ public:
     */
     virtual bool Validate();
 
-    //@}
+    ///@}
 
 
     /**
         @name wxWindow properties functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the identifier of the window.
@@ -3434,13 +3452,24 @@ public:
     */
     void SetAccessible(wxAccessible* accessible);
 
-    //@}
+    /**
+        Override to create a specific accessible object.
+    */
+    virtual wxAccessible* CreateAccessible();
+
+    /**
+        Returns the accessible object, calling CreateAccessible if necessary.
+        May return NULL, in which case system-provide accessible is used.
+    */
+    wxAccessible* GetOrCreateAccessible();
+
+    ///@}
 
 
     /**
         @name Window deletion functions
     */
-    //@{
+    ///@{
 
     /**
         This function simply generates a wxCloseEvent whose handler usually tries
@@ -3502,14 +3531,14 @@ public:
      */
     bool IsBeingDeleted() const;
 
-    //@}
+    ///@}
 
 
 
     /**
         @name Drag and drop functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the associated drop target, which may be @NULL.
@@ -3541,13 +3570,13 @@ public:
     */
     virtual void DragAcceptFiles(bool accept);
 
-    //@}
+    ///@}
 
 
     /**
         @name Constraints, sizers and window layout functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the sizer of which this window is a member, if any, otherwise @NULL.
@@ -3663,14 +3692,14 @@ public:
      */
     bool GetAutoLayout() const;
 
-    //@}
+    ///@}
 
 
 
     /**
         @name Mouse functions
     */
-    //@{
+    ///@{
 
     /**
         Directs all mouse input to this window.
@@ -3774,7 +3803,7 @@ public:
      */
     virtual bool EnableTouchEvents(int eventsMask);
 
-    //@}
+    ///@}
 
 
 
@@ -3782,7 +3811,7 @@ public:
     /**
         @name Miscellaneous functions
     */
-    //@{
+    ///@{
 
     /**
         Return where the given point lies, exactly.
@@ -4025,7 +4054,7 @@ public:
     */
     virtual void UpdateWindowUI(long flags = wxUPDATE_UI_NONE);
 
-    //@}
+    ///@}
 
 
     // NOTE: static functions must have their own group or Doxygen will screw
@@ -4034,7 +4063,7 @@ public:
     /**
         @name Miscellaneous static functions
     */
-    //@{
+    ///@{
 
     /**
         Returns the default font and colours which are used by the control.
@@ -4166,7 +4195,7 @@ public:
     */
     static void UnreserveControlId(wxWindowID id, int count = 1);
 
-    //@}
+    ///@}
 
 
 
@@ -4303,7 +4332,7 @@ protected:
     */
     virtual bool ProcessEvent(wxEvent& event);
 
-    //@{
+    ///@{
     /**
         See ProcessEvent() for more info about why you shouldn't use this function
         and the reason for making this function protected in wxWindow.
@@ -4313,7 +4342,7 @@ protected:
     virtual void AddPendingEvent(const wxEvent& event);
     void ProcessPendingEvents();
     bool ProcessThreadEvent(const wxEvent& event);
-    //@}
+    ///@}
 };
 
 
@@ -4323,7 +4352,7 @@ protected:
 // ============================================================================
 
 /** @addtogroup group_funcmacro_misc */
-//@{
+///@{
 
 /**
     Find the deepest window at the mouse pointer position, returning the window
@@ -4368,5 +4397,5 @@ wxWindow* wxGetTopLevelParent(wxWindow* window);
  */
 wxString wxDumpWindow(const wxWindow* window);
 
-//@}
+///@}
 

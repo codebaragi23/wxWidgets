@@ -398,7 +398,7 @@ public:
     /**
         @name Event queuing and processing
     */
-    //@{
+    ///@{
 
     /**
         Queue event for a later processing.
@@ -695,13 +695,13 @@ public:
     */
     void DeletePendingEvents();
 
-    //@}
+    ///@}
 
 
     /**
         @name Connecting and disconnecting
     */
-    //@{
+    ///@{
 
     /**
         Connects the given function dynamically with the event handler, id and
@@ -871,13 +871,13 @@ public:
                     wxObjectEventFunction function = NULL,
                     wxObject* userData = NULL,
                     wxEvtHandler* eventSink = NULL);
-    //@}
+    ///@}
 
 
     /**
         @name Binding and Unbinding
     */
-    //@{
+    ///@{
 
     /**
         Binds the given function, functor or method dynamically with the event.
@@ -1032,11 +1032,11 @@ public:
                 int id = wxID_ANY,
                 int lastId = wxID_ANY,
                 wxObject *userData = NULL );
-    //@}
+    ///@}
     /**
         @name User-supplied data
     */
-    //@{
+    ///@{
 
     /**
         Returns user-supplied client data.
@@ -1078,7 +1078,7 @@ public:
     */
     void SetClientObject(wxClientData* data);
 
-    //@}
+    ///@}
 
 
     /**
@@ -1087,7 +1087,7 @@ public:
         wxEvtHandler can be arranged in a double-linked list of handlers
         which is automatically iterated by ProcessEvent() if needed.
     */
-    //@{
+    ///@{
 
     /**
         Returns @true if the event handler is enabled, @false otherwise.
@@ -1184,7 +1184,7 @@ public:
     */
     bool IsUnlinked() const;
 
-    //@}
+    ///@}
 
     /**
         @name Global event filters.
@@ -1194,7 +1194,7 @@ public:
         Event filters can be defined to pre-process all the events that happen
         in an application, see wxEventFilter documentation for more information.
      */
-    //@{
+    ///@{
 
     /**
         Add an event filter whose FilterEvent() method will be called for each
@@ -1218,7 +1218,7 @@ public:
      */
     static void RemoveFilter(wxEventFilter* filter);
 
-    //@}
+    ///@}
 
 protected:
     /**
@@ -1304,10 +1304,20 @@ enum wxKeyCategoryFlags
     /// home and end keys, on and off numeric keypads
     WXK_CATEGORY_JUMP,
 
-    /// tab key, on and off numeric keypads
+    /**
+        Tab key, on and off numeric keypads.
+
+        Note that while `Ctrl+I` and `TAB` keys generate the same key code,
+        only the latter is considered to be in this category.
+     */
     WXK_CATEGORY_TAB,
 
-    /// backspace and delete keys, on and off numeric keypads
+    /**
+        Backspace and delete keys, on and off numeric keypads.
+
+        Note that while `Ctrl+H` and `BACKSPACE` keys generate the same key
+        code, only the latter is considered to be in this category.
+     */
     WXK_CATEGORY_CUT,
 
     /// union of WXK_CATEGORY_ARROW, WXK_CATEGORY_PAGING, and WXK_CATEGORY_JUMP categories
@@ -1398,11 +1408,22 @@ enum wxKeyCategoryFlags
     26 for Ctrl-Z. This is convenient for terminal-like applications and can be
     completely ignored by all the other ones (if you need to handle Ctrl-A it
     is probably a better idea to use the key event rather than the char one).
-    Notice that currently no translation is done for the presses of @c [, @c
-    \\, @c ], @c ^ and @c _ keys which might be mapped to ASCII values from 27
-    to 31.
+    For completeness, the same translation is done for the presses of @c [, @c
+    \\, @c ], @c ^ and @c _ keys which are mapped to ASCII values from 27 to
+    31.
     Since version 2.9.2, the enum values @c WXK_CONTROL_A - @c WXK_CONTROL_Z
     can be used instead of the non-descriptive constant values 1-26.
+
+    @note Unfortunately, some keys don't generate consistent events when used
+    with the Control key. Notably:
+        - `Ctrl-Backspace` generates events with both key code and Unicode code
+          of ::WXK_DELETE in wxMSW, but ::WXK_BACK in wxGTK.
+        - `Ctrl-Enter` generates events with both key code and Unicode code of
+          ::WXK_CONTROL_J in wxMSW, but ::WXK_RETURN in wxGTK.
+        - `Ctrl-Letter` generates events corresponding to the control code even
+        when the letter is mapped to a non-Latin letter in the current keyboard
+        layout in wxMSW, but doesn't generate any `wxEVT_CHAR` events at all in
+        this case in wxGTK.
 
     Finally, modifier keys only generate key events but no char events at all.
     The modifiers keys are @c WXK_SHIFT, @c WXK_CONTROL, @c WXK_ALT and various
@@ -1572,7 +1593,7 @@ public:
     */
     bool IsAutoRepeat() const;
 
-    //@{
+    ///@{
     /**
         Obtains the position (in client coordinates) at which the key was pressed.
 
@@ -1585,7 +1606,7 @@ public:
     */
     wxPoint GetPosition() const;
     void GetPosition(wxCoord* x, wxCoord* y) const;
-    //@}
+    ///@}
 
     /**
         Returns the raw key code for this event.
@@ -1902,7 +1923,7 @@ public:
 
     This class is used for system colour change events, which are generated
     when the user changes the colour settings or when the system theme changes
-    (e.g. automatic dark mode switching on macOS).
+    (e.g.\ automatic dark mode switching on macOS).
 
     Event handlers for this event can access the new system colour settings through
     wxSystemSettings::GetColour().
@@ -4919,7 +4940,7 @@ public:
 // ============================================================================
 
 /** @addtogroup group_funcmacro_events */
-//@{
+///@{
 
 #if wxUSE_BASE
 
@@ -4928,7 +4949,7 @@ public:
 
     The values of this type should only be created using wxNewEventType().
 
-    See the macro wxDEFINE_EVENT_TYPE() for more information.
+    See the macro wxDEFINE_EVENT() for more information.
 
     @see @ref overview_events
 */
@@ -5262,4 +5283,4 @@ wxEventType wxEVT_WINDOW_MODAL_DIALOG_CLOSED;
 
 #endif // wxUSE_GUI
 
-//@}
+///@}

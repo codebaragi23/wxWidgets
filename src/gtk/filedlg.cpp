@@ -20,6 +20,7 @@
 #endif
 
 #include "wx/gtk/private.h"
+#include "wx/gtk/private/error.h"
 #include "wx/gtk/private/mnemonics.h"
 
 #ifdef __UNIX__
@@ -30,6 +31,8 @@
 #include "wx/tokenzr.h" // wxStringTokenizer
 #include "wx/filefn.h" // ::wxGetCwd
 #include "wx/modalhook.h"
+
+#include "wx/private/elfversion.h"
 
 //-----------------------------------------------------------------------------
 // "clicked" for OK-button
@@ -497,6 +500,24 @@ void wxFileDialog::GTKSelectionChanged(const wxString& filename)
     m_currentlySelectedFilename = filename;
 
     UpdateExtraControlUI();
+}
+
+wxELF_VERSION_COMPAT("_ZN12wxFileDialog11AddShortcutERK8wxStringi", "3.2.1")
+bool wxFileDialog::AddShortcut(const wxString& directory, int WXUNUSED(flags))
+{
+    wxGtkError error;
+
+    if ( !gtk_file_chooser_add_shortcut_folder(GTK_FILE_CHOOSER(m_widget),
+                                               directory.utf8_str(),
+                                               error.Out()) )
+    {
+        wxLogDebug("Failed to add shortcut \"%s\": %s",
+                   directory, error.GetMessage());
+
+        return false;
+    }
+
+    return true;
 }
 
 #endif // wxUSE_FILEDLG

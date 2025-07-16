@@ -61,7 +61,7 @@ public:
         Note that you should look at wxEvtLoopBase for more event-processing
         documentation.
     */
-    //@{
+    ///@{
 
     /**
         Called by wxWidgets on creation of the application. Override this if you wish
@@ -126,7 +126,7 @@ public:
      */
     virtual bool UsesEventLoop() const;
 
-    //@}
+    ///@}
 
 
     /**
@@ -136,7 +136,7 @@ public:
         to allow queuing of events even when there's no event loop
         (e.g. in wxAppConsole::OnInit).
     */
-    //@{
+    ///@{
 
     /**
         Process all pending events; it is necessary to call this function to
@@ -185,7 +185,7 @@ public:
     */
     void ResumeProcessingOfPendingEvents();
 
-    //@}
+    ///@}
 
     /**
         Delayed objects destruction.
@@ -195,7 +195,7 @@ public:
         still pending for the same object. In this case the handler may call
         ScheduleForDestruction() instead.
      */
-    //@{
+    ///@{
 
     /**
         Schedule the object for destruction in the near future.
@@ -219,7 +219,7 @@ public:
      */
     bool IsScheduledForDestruction(wxObject *object) const;
 
-    //@}
+    ///@}
 
 
     /**
@@ -268,13 +268,13 @@ public:
     /**
         @name Callbacks for application-wide "events"
     */
-    //@{
+    ///@{
 
     /**
         This function is called when an assert failure occurs, i.e.\ the condition
         specified in wxASSERT() macro evaluated to @false.
 
-        It is only called in debug mode (when @c __WXDEBUG__ is defined) as
+        It is only called in debug mode (when @c \__WXDEBUG__ is defined) as
         asserts are not left in the release code at all.
         The base class version shows the default assert failure dialog box proposing to
         the user to stop the program, continue or ignore all subsequent asserts.
@@ -285,7 +285,7 @@ public:
             the line number in this file where the assert occurred
         @param func
             the name of the function where the assert occurred, may be
-            empty if the compiler doesn't support C99 __FUNCTION__
+            empty if the compiler doesn't support C99 \__FUNCTION__
         @param cond
             the condition of the failed assert in text form
         @param msg
@@ -393,7 +393,8 @@ public:
         OnInit().
 
         Return @true to continue processing, @false to exit the application
-        immediately.
+        immediately. In the latter case, you may want to call SetErrorExitCode()
+        to set the process exit code to use when the application terminates.
     */
     virtual bool OnInit();
 
@@ -422,7 +423,7 @@ public:
     */
     virtual int OnRun();
 
-    //@}
+    ///@}
 
 
     /**
@@ -432,7 +433,7 @@ public:
 
         @see overview_exceptions
     */
-    //@{
+    ///@{
 
     /**
         This function is called if an unhandled exception occurs inside the main
@@ -614,13 +615,13 @@ public:
     */
     virtual void RethrowStoredException();
 
-    //@}
+    ///@}
 
 
     /**
         @name Application information
     */
-    //@{
+    ///@{
 
     /**
         Returns the user-readable application name.
@@ -732,7 +733,7 @@ public:
     */
     void SetVendorName(const wxString& name);
 
-    //@}
+    ///@}
 
     /**
         Sets the C locale to the default locale for the current environment.
@@ -760,6 +761,29 @@ public:
         @since 2.9.5
      */
     void SetCLocale();
+
+    /**
+        Sets the error code to use in case of exit on error.
+
+        This function is mostly useful to customize the error code returned by
+        the application when it exits due to OnInit() returning @false and can
+        be called from OnInit() itself or other virtual functions called from
+        it, for example OnCmdLineError().
+
+        By default, the exit code depends on the compiler being used, e.g. it
+        is @c 255 with typical Unix compilers (gcc, clang) and @c 127 with
+        MSVC, so it is recommended to call this function to set a consistent
+        exit code, e.g. @c 2 which is a de facto standard exit code if command
+        line parsing fails.
+
+        SetErrorExitCode() can be overridden by the application to perform
+        additional actions, but the overridden version should call the base
+        class version to update the value returned by GetErrorExitCode() and
+        actually used when exiting the application.
+
+        @since 3.2.7
+     */
+    void SetErrorExitCode(int code);
 
     /**
         Number of command line arguments (after environment-specific processing).
@@ -936,7 +960,7 @@ public:
         Works like SafeYield() with @e onlyIfNeeded == @true except that
         it allows the caller to specify a mask of events to be processed.
 
-        See wxAppConsole::YieldFor for more info.
+        See wxEventLoopBase::YieldFor() for more info.
     */
     virtual bool SafeYieldFor(wxWindow *win, long eventsToProcess);
 
@@ -1034,7 +1058,7 @@ public:
     /**
         @name GTK-specific functions
     */
-    //@{
+    ///@{
 
     /**
         Disables the printing of various GTK messages.
@@ -1061,12 +1085,31 @@ public:
     */
     static void GTKSuppressDiagnostics(int flags = -1);
 
-    //@}
+    /**
+        Allows wxWidgets to selectively suppress some GTK messages.
+
+        This function can be called to allow wxWidgets to control GTK message
+        logging. You must @e not call it if your application calls the @c
+        g_log_set_writer_func() function itself, as this function can be only
+        called once.
+
+        It is recommended to call this function in your overridden version of
+        wxApp::OnInit() to allow wxWidgets to suppress some spurious GTK error
+        messages, e.g. the ones that happen whenever wxNotebook pages are
+        removed with the current GTK versions.
+
+        @onlyfor{wxgtk}
+
+        @since 3.2.1
+     */
+    static void GTKAllowDiagnosticsControl();
+
+    ///@}
 
     /**
         @name Mac-specific functions
     */
-    //@{
+    ///@{
 
     /**
         Called in response of an "open-application" Apple event.
@@ -1160,7 +1203,7 @@ public:
     */
     void OSXEnableAutomaticTabbing(bool enable);
 
-    //@}
+    ///@}
 
 };
 
@@ -1172,7 +1215,7 @@ public:
 
 
 /** @addtogroup group_funcmacro_rtti */
-//@{
+///@{
 
 /**
     This is used in headers to create a forward declaration of the ::wxGetApp()
@@ -1277,7 +1320,7 @@ public:
  */
 #define wxIMPLEMENT_WXWIN_MAIN_CONSOLE
 
-//@}
+///@}
 
 
 
@@ -1293,7 +1336,7 @@ wxApp *wxTheApp;
 
 
 /** @addtogroup group_funcmacro_appinitterm */
-//@{
+///@{
 
 /**
     This function doesn't exist in wxWidgets but it is created by using the
@@ -1337,7 +1380,7 @@ bool wxHandleFatalExceptions(bool doIt = true);
 
     If the function returns @false the initialization could not be performed,
     in this case the library cannot be used and wxUninitialize() shouldn't be
-    called neither.
+    called either.
 
     This function may be called several times but wxUninitialize() must be
     called for each successful call to this function.
@@ -1426,12 +1469,12 @@ int wxEntry(HINSTANCE hInstance,
             char* pCmdLine = NULL,
             int nCmdShow = SW_SHOWNORMAL);
 
-//@}
+///@}
 
 
 
 /** @addtogroup group_funcmacro_procctrl */
-//@{
+///@{
 
 /**
     Exits application after calling wxApp::OnExit.
@@ -1444,10 +1487,10 @@ int wxEntry(HINSTANCE hInstance,
 */
 void wxExit();
 
-//@}
+///@}
 
 /** @addtogroup group_funcmacro_debug */
-//@{
+///@{
 
 /**
     @def wxDISABLE_DEBUG_SUPPORT()
@@ -1478,5 +1521,5 @@ void wxExit();
     wxDISABLE_ASSERTS_IN_RELEASE_BUILD(); \
     wxDISABLE_DEBUG_LOGGING_IN_RELEASE_BUILD()
 
-//@}
+///@}
 

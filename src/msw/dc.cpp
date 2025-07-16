@@ -21,7 +21,7 @@
 
 
 #ifndef WX_PRECOMP
-    #include "wx/msw/wrapcdlg.h"
+    #include "wx/msw/private.h"
     #include "wx/image.h"
     #include "wx/window.h"
     #include "wx/utils.h"
@@ -337,7 +337,7 @@ BOOL GradientFill(HDC hdc, PTRIVERTEX pVert, ULONG numVert,
     return ::GradientFill(hdc, pVert, numVert, pMesh, numMesh, mode);
 }
 
-#else // Can't use the functions neither statically nor dynamically.
+#else // Can't use the functions either statically or dynamically.
 
 inline
 DWORD GetLayout(HDC WXUNUSED(hdc))
