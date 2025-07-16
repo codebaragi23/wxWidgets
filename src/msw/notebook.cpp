@@ -761,8 +761,8 @@ bool wxNotebook::InsertPage(size_t nPage,
         int btnSize = rect.bottom - rect.top;
 
         HWND hwnd = CreateWindow(
-            "BUTTON",           // Predefined class; Unicode assumed 
-            "X",                // Button text 
+            wxT("BUTTON"),           // Predefined class; Unicode assumed 
+            wxT("X"),                // Button text 
             WS_VISIBLE | WS_CHILD | WS_TABSTOP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,  // Styles 
             0,              // x position 
             0,              // y position 

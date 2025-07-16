@@ -20,7 +20,7 @@
 #define wxSB_FLAT      0x0001
 #define wxSB_RAISED    0x0002
 #define wxSB_SUNKEN    0x0003
-
+#define wxSB_OWNERDRAW 0x0004
 
 /**
     @class wxStatusBarPane

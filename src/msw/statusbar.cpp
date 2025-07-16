@@ -277,6 +277,9 @@ void wxStatusBar::DoUpdateStatusText(int nField)
     case wxSB_FLAT:
         style = SBT_NOBORDERS;
         break;
+    case wxSB_OWNERDRAW:
+        style = SBT_OWNERDRAW;
+        break;
 
     case wxSB_SUNKEN:
     case wxSB_NORMAL:

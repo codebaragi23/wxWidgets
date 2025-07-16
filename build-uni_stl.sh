@@ -1,0 +1,1 @@
+../configure --disable-shared --enable-std_string --enable-stl --enable-webview --disable-unsafe_conv_in_wxstring

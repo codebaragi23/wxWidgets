@@ -1868,7 +1868,9 @@ public:
 
 #ifndef wxNO_IMPLICIT_WXSTRING_ENCODING
     const wxScopedCharBuffer fn_str() const
-        { return wxConvFile.cWC2WX( wc_str( wxConvLibc ) ); }
+        //{ return wxConvFile.cWC2WX( wc_str( wxConvLibc ) ); }
+        // TODO: converting bug (wx2wc), so return default
+        { return wxScopedCharBuffer::CreateNonOwned(mb_str(), length()); }
 #endif // wxNO_IMPLICIT_WXSTRING_ENCODING
 #endif // Unicode/ANSI
 
