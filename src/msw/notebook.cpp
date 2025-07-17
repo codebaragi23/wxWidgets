@@ -674,14 +674,14 @@ wxNotebookPage *wxNotebook::DoRemovePage(size_t nPage)
 // remove all pages
 bool wxNotebook::DeleteAllPages()
 {
-    wxBookCtrlBase::DeleteAllPages();
-
     for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
     {
         TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
         TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
         DestroyWindow((HWND)tcItem.lParam);
     }
+    
+    wxBookCtrlBase::DeleteAllPages();
     if ( !TabCtrl_DeleteAllItems(GetHwnd()) )
         wxLogLastError(wxS("TabCtrl_DeleteAllItems()"));
 
