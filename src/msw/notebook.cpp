@@ -423,6 +423,28 @@ void wxNotebook::AdjustCloseBtns()
     }
 }
 
+void wxNotebook::MSWOnClosePage(WXHWND btn)
+{
+    for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
+    {
+        TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
+        TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
+        if ((HWND)tcItem.lParam == btn)
+        {
+            RemovePage(nPage);
+            SendPageCloseEvent(nPage);
+        }
+    }
+}
+
+void wxNotebook::SendPageCloseEvent(int nPage)
+{
+    wxNotebookEvent event(wxEVT_NOTEBOOK_PAGE_CLOSED, GetId());
+    event.SetSelection(nPage);
+    event.SetEventObject(this);
+    GetEventHandler()->ProcessEvent(event);
+}
+
 int wxNotebook::ChangeSelection(size_t nPage)
 {
     wxCHECK_MSG( IS_VALID_PAGE(nPage), wxNOT_FOUND, wxT("notebook page out of range") );
@@ -447,6 +469,10 @@ bool wxNotebook::SetPageText(size_t nPage, const wxString& strText)
     tcItem.mask = TCIF_TEXT;
     tcItem.pszText = wxMSW_CONV_LPTSTR(strText);
 
+    const wxString newText = strText + wxT("     ");
+    if (((m_windowStyle & wxNB_CLOSE_ON_ACTIVE_TABS) && (nPage == (size_t)m_selection)) || (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS))
+        tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
+
     if ( !HasFlag(wxNB_MULTILINE) )
         return TabCtrl_SetItem(GetHwnd(), nPage, &tcItem) != 0;
 
@@ -461,7 +487,6 @@ bool wxNotebook::SetPageText(size_t nPage, const wxString& strText)
         for ( size_t page = 0; page < count; page++ )
             m_pages[page]->SetSize(r);
     }
-
     return ret;
 }
 
@@ -782,7 +807,7 @@ bool wxNotebook::InsertPage(size_t nPage,
             return false;
         }
 
-        wxString newText = strText + wxT("     ");
+        const wxString newText = strText + wxT("     ");
         if (m_windowStyle & wxNB_CLOSE_ON_ALL_TABS)
             tcItem.pszText = wxMSW_CONV_LPTSTR(newText);
 
@@ -1450,16 +1475,8 @@ wxNotebook::MSWHandleMessage(WXLRESULT* result,
 {
     if (message == WM_COMMAND)
     {
-        WXHWND hwnd = (WXHWND)lParam;
-        for (size_t nPage = 0; nPage < GetPageCount(); nPage++)
-        {
-            TC_ITEM tcItem; tcItem.mask = TCIF_PARAM;
-            TabCtrl_GetItem(GetHwnd(), nPage, &tcItem);
-            if ((HWND)tcItem.lParam == hwnd)
-            {
-                RemovePage(nPage);
-            }
-        }
+        if (HIWORD(wParam) == BN_CLICKED)
+            MSWOnClosePage((WXHWND)lParam);
     }
 
     // prevent close button crash
@@ -1517,4 +1534,3 @@ bool wxNotebook::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM* result)
 }
 
 #endif // wxUSE_NOTEBOOK
-
